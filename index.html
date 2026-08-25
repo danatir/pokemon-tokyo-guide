@@ -196,18 +196,12 @@ footer{margin-top:36px;padding-top:12px;border-top:1px solid var(--line);font-si
 .rem input{margin:3px 0 0;width:16px;height:16px;accent-color:var(--grn);cursor:pointer}
 
 /* --- lock bar + progress transfer --- */
-.lockbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0 2px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:12.5px;color:var(--soft)}
-.lockbar.locked{background:var(--ambbg);border-color:#e2c470;color:#75590a}
-.lockbar b{font-size:13px;color:var(--ink)}
-.lockbar.locked b{color:#5e4708}
-.lockbar .sp{flex:1 1 auto}
-.lockbar button{font:inherit;font-weight:700;padding:5px 11px;border-radius:5px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}
-.lockbar button:hover{background:#f4f1f5}
-.lockbar button:focus-visible,.xfer button:focus-visible{outline:2px solid var(--blu);outline-offset:2px}
-.lockbar .primary{background:var(--ink);color:#fff;border-color:var(--ink)}
-.lockbar .primary:hover{background:#33303a}
-body.ro .chk,body.ro .trk input[type=checkbox],body.ro #rl input[type=checkbox]{opacity:.35;cursor:not-allowed}
-body.ro .trk label{cursor:default}
+.savebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0 2px;padding:9px 12px;border:1px solid #cfe0cf;border-radius:6px;background:var(--grnbg);font-size:12.5px;color:#2c6b45}
+.savebar b{font-size:13px;color:#14512f}
+.savebar .sp{flex:1 1 auto}
+.savebar button{font:inherit;font-weight:700;padding:5px 11px;border-radius:5px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}
+.savebar button:hover{background:#f4f1f5}
+.savebar button:focus-visible,.xfer button:focus-visible{outline:2px solid var(--blu);outline-offset:2px}
 .xfer{display:none;margin:8px 0 0;padding:11px 12px;border:1px solid var(--line);border-radius:6px;background:#faf8f4}
 .xfer.on{display:block}
 .xfer p{font-size:12.2px;color:var(--soft);margin-bottom:7px;line-height:1.5}
@@ -252,15 +246,14 @@ body.ro .trk label{cursor:default}
 
 <div class="w">
 
-<div class="lockbar" id="lockbar">
-  <b id="lockttl">Checklist locked</b>
-  <span id="lockmsg">Unlock to tick things off. Your ticks are saved in this browser only.</span>
+<div class="savebar">
+  <b>✓ Ticks save automatically</b>
+  <span>Everything you tick is remembered on this device, including after you close the tab.</span>
   <span class="sp"></span>
-  <button id="lockbtn" class="primary">Unlock</button>
-  <button id="xferbtn">Move progress</button>
+  <button id="xferbtn">Phone ⇄ laptop</button>
 </div>
 <div class="xfer" id="xfer">
-  <p><b>Moving between phone and laptop.</b> Ticks live in one browser only — they do not follow you. Copy this code on the device that is up to date, paste it on the other one, press Load. Worth saving somewhere: if you do not open this page for a week, iPhone Safari can clear it on its own.</p>
+  <p><b>The page follows you between devices. Your ticks do not.</b> There is no server behind this site — GitHub Pages only serves the file, so each browser remembers its own ticks. To copy them across: press Copy on the device that is up to date, paste the code on the other one, press Load. Also worth keeping somewhere, because if you do not open this page for a week iPhone Safari can clear its storage on its own.</p>
   <textarea id="xcode" spellcheck="false" aria-label="Progress code"></textarea>
   <div class="row"><button id="xcopy">Copy code</button><button id="xload">Load pasted code</button><span class="msg" id="xmsg"></span></div>
 </div>
@@ -942,25 +935,9 @@ function renderRem(){
     d.addEventListener('click',ev=>{if(ev.target.tagName==='A'||ev.target.tagName==='INPUT')return;d.classList.toggle('open');});
     rl.appendChild(d);
   });
-  if(typeof applyLock==='function')applyLock();
+ 
 }
 
-/* ---- soft lock: only someone with the code can tick ---- */
-const LKEY=KEY+'.unlocked', CODEH='120vmux.wt8lt4';
-function hh(t){let a=5381,b=0;for(let i=0;i<t.length;i++){const c=t.charCodeAt(i);a=((a*33)^c)>>>0;b=(c+(b<<6)+(b<<16)-b)>>>0;}return a.toString(36)+'.'+b.toString(36);}
-let UNLOCKED=false; try{UNLOCKED=localStorage.getItem(LKEY)==='1';}catch(e){}
-function applyLock(){
-  document.body.classList.toggle('ro',!UNLOCKED);
-  document.querySelectorAll('.chk,.trk input[type=checkbox],#rl input[type=checkbox]').forEach(i=>{i.disabled=!UNLOCKED;});
-  const bar=document.getElementById('lockbar');
-  if(!bar)return;
-  bar.classList.toggle('locked',!UNLOCKED);
-  document.getElementById('lockttl').textContent=UNLOCKED?'Checklist unlocked':'Checklist locked';
-  document.getElementById('lockmsg').textContent=UNLOCKED
-    ?'This device can tick things off. Ticks are saved in this browser only.'
-    :'Read-only. Unlock to tick things off — anyone else opening this link cannot change anything you see.';
-  document.getElementById('lockbtn').textContent=UNLOCKED?'Lock again':'Unlock';
-}
 /* ---- progress code: 36 stations + 3 prizes + every event, packed ---- */
 function pack(){
   let b='';
@@ -1004,7 +981,7 @@ function render(f){
     d.addEventListener('click',ev=>{ if(ev.target.tagName==='A'||ev.target.classList.contains('chk'))return; d.classList.toggle('open'); });
     eg.appendChild(d);
   });
-  CURF=f; SHOWN=n; evCount(); if(typeof applyLock==='function')applyLock();
+  CURF=f; SHOWN=n; evCount();
 }
 let CURF='all',SHOWN=0;
 function evCount(){
@@ -1026,14 +1003,6 @@ document.getElementById('rall').onclick=()=>{
 renderRem();
 render('all');
 
-/* lock bar wiring */
-document.getElementById('lockbtn').onclick=()=>{
-  if(UNLOCKED){UNLOCKED=false;try{localStorage.removeItem(LKEY);}catch(e){}applyLock();return;}
-  const t=prompt('Unlock code:');
-  if(t===null)return;
-  if(hh(t.trim())===CODEH){UNLOCKED=true;try{localStorage.setItem(LKEY,'1');}catch(e){}applyLock();}
-  else alert('Wrong code. The checklist stays read-only.');
-};
 const xf=document.getElementById('xfer'),xc=document.getElementById('xcode'),xm=document.getElementById('xmsg');
 document.getElementById('xferbtn').onclick=()=>{
   xf.classList.toggle('on');
@@ -1046,13 +1015,11 @@ document.getElementById('xcopy').onclick=()=>{
   else done();
 };
 document.getElementById('xload').onclick=()=>{
-  if(!UNLOCKED){xm.style.color='#c0392b';xm.textContent='Unlock first.';return;}
   const err=unpack(xc.value);
   if(err){xm.style.color='#c0392b';xm.textContent=err;return;}
   xm.style.color='#1d7a4a';xm.textContent='Loaded.';
-  syncTracker();renderRem();render(CURF||'all');applyLock();
+  syncTracker();renderRem();render(CURF||'all');
 };
-applyLock();
 
 </script>
 </body>
